@@ -1,13 +1,6 @@
 #!/usr/bin/env python
 
-import psutil
-import pprint
-import socketserver
-import http.server
-import urllib.parse
-import json
-import time
-import os
+import psutil, socketserver, http.server, urllib.parse, json, time, os, re
 
 port = int(os.environ['METRICS_PORT']) if "METRICS_PORT" in os.environ else 8080
 disks_path = {}
@@ -23,8 +16,22 @@ if not disks_path:
     disks_path['root'] = '/'
 
 if not net_devices:
-    device = next(x for x in psutil.net_if_stats().keys() if x[0:3] == 'eth')
+    try:
+        device = next(x for x in psutil.net_if_stats().keys() if x[0:3] == 'eth')
+    except:
+        raise BaseException('Unable to find device eth')
     net_devices[device] = device
+
+def flatten_dict(d):
+    def items():
+        for key, value in d.items():
+            if isinstance(value, dict):
+                for subkey, subvalue in flatten_dict(value).items():
+                    yield key + "_" + re.sub(r'(?<!^)(?=[A-Z])', '_', subkey).lower(), subvalue
+            else:
+                yield key, value
+
+    return dict(items())
 
 def get_stats():
 
@@ -32,34 +39,47 @@ def get_stats():
     mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
     net0 = psutil.net_io_counters(pernic=True)
-    time.sleep(5)
+    time.sleep(1)
     net1 = psutil.net_io_counters(pernic=True)
 
     #disk_io = psutil.disk_io_counters()
 
     stats = {
-      'load_1': load[0],
-      'load_5': load[1],
-      'load_15': load[2],
+      'load': {
+        '1': load[0],
+        '5': load[1],
+        '15': load[2]
+      },
+      'mem': {
+        'used': mem.used,
+        'free': mem.free,
+        'usedPct': mem.percent,
+      },
+      'swap': {
+        'used': swap.used,
+        'free': swap.free,
+        'usedPct': swap.percent
+      },
+      'disk': {
+      },
+      'net': {
+      }
 
-      'mem_used': mem.used,
-      'mem_free': mem.free,
-      'mem_used_pct': mem.percent,
-
-      'swap_used': swap.used,
-      'swap_free': swap.free,
-      'swap_used_pct': swap.percent
     }
 
     for disk_name, disk_path in disks_path.items():
         disk = psutil.disk_usage(disk_path)
-        stats['disk_' + disk_name + '_used'] = disk.used
-        stats['disk_' + disk_name + '_free'] = disk.free
-        stats['disk_' + disk_name + '_used_pct'] = disk.percent
+        stats['disk'][disk_name] = {
+            'used': disk.used,
+            'free': disk.free,
+            'usedPct': disk.percent
+        }
 
     for net_name, net_device in net_devices.items():
-        stats['net_' + net_name + '_bytes_sent_s'] = round((net1[net_device].bytes_sent - net0[net_device].bytes_sent) / 5)
-        stats['net_' + net_name + '_bytes_recv_s'] = round((net1[net_device].bytes_recv - net0[net_device].bytes_recv) / 5)
+        stats['net'][net_name] = {
+            'sentSpeed': round((net1[net_device].bytes_sent - net0[net_device].bytes_sent) / 1),
+            'receivedSpeed': round((net1[net_device].bytes_recv - net0[net_device].bytes_recv) / 1)
+        }
 
     return stats
 
@@ -73,7 +93,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return
 
         try:
-            data = get_stats()
+            data = flatten_dict(get_stats()) if sMac == 'flat' else get_stats()
 
             self.send_response(200)
             self.send_header('Content-type','application/json')
