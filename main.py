@@ -9,7 +9,6 @@ net_devices = {}
 net_collect=[]
 net_collect_interval=30
 net_intervals_minutes=[0, 1, 5, 15]
-max_net_interval_minutes=max(net_intervals_minutes)
 net_zero_interval = 1
 
 for k, v in os.environ.items():
@@ -33,6 +32,8 @@ if not net_devices:
     except:
         raise BaseException('Unable to find device eth')
     net_devices[device] = device
+
+max_net_interval_minutes=max(net_intervals_minutes)
 
 def flatten_dict(d):
     def items():
