@@ -6,7 +6,7 @@ services:
     build:
       context: ./collector
     environment:
-      PULL_AGENTS: "machine1:8734,machine2:8734"
+      PULL_AGENTS: "machine1,machine2"
       PULL_FREQUENCY: 1m
       INFLUXDB_HOST: machine1
       INFLUXDB_DB: mydb

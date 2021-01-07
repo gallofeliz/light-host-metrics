@@ -1,0 +1,22 @@
+- Push/Pull
+- Auto Discovering
+
+```
+import socket
+from ipaddress import IPv4Network
+
+def scan(network):
+    found = []
+    for IP in IPv4Network(network).hosts():
+       t_IP=str(IP)
+       s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+       s.settimeout(0.05)
+       conn = s.connect_ex((t_IP, 9386))
+       if(conn == 0) :
+          hostname = socket.gethostbyaddr(t_IP)[0]
+          found.append({ 'hostname': hostname, 'ip': t_IP })
+       s.close()
+    return found
+
+print(scan('192.168.1.0/24'))
+```

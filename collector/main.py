@@ -24,7 +24,7 @@ def convert_to_seconds(duration):
 def describe_agent(agent_str):
     return {
         'hostname': agent_str.split(':')[0],
-        'endpoint': 'http://' + agent_str + (':8080' if ':' not in agent_str else '')
+        'endpoint': 'http://' + agent_str + (':9386' if ':' not in agent_str else '')
     }
 
 logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')

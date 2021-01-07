@@ -2,7 +2,7 @@
 
 import psutil, socketserver, http.server, json, time, os, re, threading, datetime
 
-port = int(os.environ['METRICS_PORT']) if "METRICS_PORT" in os.environ else 8080
+port = int(os.environ['METRICS_PORT']) if "METRICS_PORT" in os.environ else 9386
 disks_path = {}
 net_devices = {}
 
@@ -62,6 +62,7 @@ def get_stats():
     #disk_io = psutil.disk_io_counters()
 
     stats = {
+      # host : hostname ?
       'load': {
         '1': load[0],
         '5': load[1],
