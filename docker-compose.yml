@@ -1,0 +1,13 @@
+version: "3.5"
+
+services:
+  collector:
+    restart: unless-stopped
+    build:
+      context: ./collector
+    environment:
+      PULL_AGENTS: "machine1:8734,machine2:8734"
+      PULL_FREQUENCY: 1m
+      INFLUXDB_HOST: machine1
+      INFLUXDB_DB: mydb
+      INFLUXDB_MEASUREMENT: test

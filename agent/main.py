@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import psutil, socketserver, http.server, urllib.parse, json, time, os, re, threading, datetime
+import psutil, socketserver, http.server, json, time, os, re, threading, datetime
 
 port = int(os.environ['METRICS_PORT']) if "METRICS_PORT" in os.environ else 8080
 disks_path = {}
@@ -34,17 +34,6 @@ if not net_devices:
     net_devices[device] = device
 
 max_net_interval_minutes=max(net_intervals_minutes)
-
-def flatten_dict(d):
-    def items():
-        for key, value in d.items():
-            if isinstance(value, dict):
-                for subkey, subvalue in flatten_dict(value).items():
-                    yield key + "_" + re.sub(r'(?<!^)(?=[A-Z])', '_', subkey).lower(), subvalue
-            else:
-                yield key, value
-
-    return dict(items())
 
 def collect_network(sec):
     global net_collect
@@ -130,16 +119,14 @@ def get_stats():
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
-        sMac = urllib.parse.urlparse(self.path).path[1:]
-        print('Requested ' + sMac)
+        path = self.path
 
-        if (sMac == 'favicon.ico'):
-            print('Skipped')
+        if (path == '/favicon.ico'):
+            print('Skipped favicon')
             return
 
         try:
-            data = flatten_dict(get_stats()) if sMac == 'flat' else get_stats()
-
+            data = get_stats()
             self.send_response(200)
             self.send_header('Content-type','application/json')
             self.end_headers()
@@ -154,6 +141,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 if max_net_interval_minutes > 0:
     collect_network(net_collect_interval)
+
 httpd = socketserver.TCPServer(('', port), Handler)
 try:
    print('Listening on ' + str(port))
