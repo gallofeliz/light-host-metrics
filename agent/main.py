@@ -62,7 +62,6 @@ def get_stats():
     #disk_io = psutil.disk_io_counters()
 
     stats = {
-      # host : hostname ?
       'load': {
         '1': load[0],
         '5': load[1],
