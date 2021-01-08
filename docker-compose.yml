@@ -6,8 +6,31 @@ services:
     build:
       context: ./collector
     environment:
-      PULL_AGENTS: "machine1,machine2"
+      PULL_AGENTS: "agent1,agent2"
       PULL_FREQUENCY: 1m
-      INFLUXDB_HOST: machine1
-      INFLUXDB_DB: mydb
+      INFLUXDB_HOST: database
+      INFLUXDB_DB: dbtest
       INFLUXDB_MEASUREMENT: test
+    extra_hosts:
+      agent1: 172.27.0.1
+  agent1:
+    restart: unless-stopped
+    build:
+      context: ./agent
+    network_mode: host
+    #volumes:
+      #- /media/drive:/media/drive:ro
+    environment:
+      - METRICS_NET_DEVICE_ETH=wlp0s20f3
+      - METRICS_DISK_ROOT=/
+      #- METRICS_DISK_EXTERNAL_DD=/media/drive
+  database:
+    restart: unless-stopped
+    image: influxdb
+    environment:
+      INFLUXDB_DB: dbtest
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "20m"

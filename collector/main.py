@@ -44,18 +44,21 @@ def collect_agent(agent, pull_frequency_s):
     threading.Timer(pull_frequency_s, lambda: collect_agent(agent, pull_frequency_s) ).start()
     logging.info('Collecting agent %s', agent['hostname'])
     # Do we should put a metric for that ? NO_DATA will alert ;)
-    response = requests.get(agent['endpoint']).json()
-    metrics = flatten_dict(response)
+    try:
+        response = requests.get(agent['endpoint']).json()
+        metrics = flatten_dict(response)
 
-    influxdb_client.write_points([{
-      'measurement': influxdb_measurement,
-      'fields': metrics,
-      'tags': {
-        'host': agent['hostname']
-      }
-    }])
+        influxdb_client.write_points([{
+          'measurement': influxdb_measurement,
+          'fields': metrics,
+          'tags': {
+            'host': agent['hostname']
+          }
+        }])
 
-    logging.info('Agent %s collected !', agent['hostname'])
+        logging.info('Agent %s collected !', agent['hostname'])
+    except Exception as e:
+        logging.error('Agent %s collect error (%s)', agent['hostname'], e)
 
 for agent in pull_agents:
     threading.Thread(target=collect_agent, args=(agent, pull_frequency_s)).start()
