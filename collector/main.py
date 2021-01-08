@@ -31,9 +31,11 @@ logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
 pull_agents=list(map(describe_agent, os.environ['PULL_AGENTS'].split(','))) if 'PULL_AGENTS' in os.environ else []
 pull_frequency=os.environ['PULL_FREQUENCY'] if pull_agents else None
 pull_frequency_s=convert_to_seconds(pull_frequency) if pull_frequency else None
+pull_first_wait_s=10
 
 logging.info('Having pull agents %s', pull_agents)
 logging.info('Having pull freq %s', pull_frequency)
+logging.info('Waiting %s secondes before start', pull_first_wait_s)
 
 influxdb_client = InfluxDBClient(os.environ['INFLUXDB_HOST'], database=os.environ['INFLUXDB_DB'])
 influxdb_measurement = os.environ['INFLUXDB_MEASUREMENT']
@@ -61,4 +63,4 @@ def collect_agent(agent, pull_frequency_s):
         logging.error('Agent %s collect error (%s)', agent['hostname'], e)
 
 for agent in pull_agents:
-    threading.Thread(target=collect_agent, args=(agent, pull_frequency_s)).start()
+    threading.Timer(pull_first_wait_s, collect_agent, (agent, pull_frequency_s)).start()
