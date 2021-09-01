@@ -59,12 +59,9 @@ def get_stats():
     mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
     cpu = psutil.cpu_freq()
-    temp = psutil.sensors_temperatures()
+    temps = psutil.sensors_temperatures()
 
     #disk_io = psutil.disk_io_counters()
-
-    print('temp ' + str(temp))
-    print('cpufreq ' + str(cpu))
 
     stats = {
       'load': {
@@ -82,18 +79,24 @@ def get_stats():
         'free': swap.free,
         'usedPct': swap.percent
       },
-      # 'cpufreq': {
-      #   'current': cpu.current
-      # },
-      # 'temperatures': {
-      #   'todo': temp
-      # },
+      'temperatures': {
+      },
+      'cpufreq': {
+         'current': round(cpu.current)
+      },
       'disk': {
       },
       'net': {
       }
 
     }
+
+    for name, entries in temps.items():
+        if name == 'cpu_thermal':
+            name = 'cpu' # thermal ? Yes, it's temperature sensor !
+        for entry in entries:
+            full_name = name + '_' + entry.label if entry.label else name
+            stats['temperatures'][full_name] = entry.current
 
     for disk_name, disk_path in disks_path.items():
         disk = psutil.disk_usage(disk_path)
