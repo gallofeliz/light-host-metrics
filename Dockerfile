@@ -1,4 +1,4 @@
-FROM python:alpine
+FROM python:3.8-alpine3.12
 
 RUN apk add --no-cache --virtual dev gcc linux-headers musl-dev \
     && pip install --no-binary :all: psutil \
