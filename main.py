@@ -58,8 +58,13 @@ def get_stats():
     load = psutil.getloadavg()
     mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
+    cpu = psutil.cpu_freq()
+    temp = psutil.sensors_temperatures()
 
     #disk_io = psutil.disk_io_counters()
+
+    print('temp ' + str(temp))
+    print('cpufreq ' + str(cpu))
 
     stats = {
       'load': {
@@ -77,6 +82,12 @@ def get_stats():
         'free': swap.free,
         'usedPct': swap.percent
       },
+      # 'cpufreq': {
+      #   'current': cpu.current
+      # },
+      # 'temperatures': {
+      #   'todo': temp
+      # },
       'disk': {
       },
       'net': {
