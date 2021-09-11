@@ -8,4 +8,4 @@ WORKDIR /app
 
 ADD main.py .
 
-CMD ./main.py
+CMD python -u ./main.py

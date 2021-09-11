@@ -88,11 +88,10 @@ def get_stats():
       },
       'net': {
       }
-
     }
 
     for name, entries in temps.items():
-        if name == 'cpu_thermal':
+        if name == 'cpu_thermal' or name == 'cpu-thermal':
             name = 'cpu' # thermal ? Yes, it's temperature sensor !
         for entry in entries:
             full_name = name + '_' + entry.label if entry.label else name
