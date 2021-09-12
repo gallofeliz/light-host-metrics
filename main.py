@@ -64,6 +64,8 @@ def get_stats():
     #disk_io = psutil.disk_io_counters()
 
     stats = {
+      'nbCpus': psutil.cpu_count(),
+      'nbProcesses': len(psutil.pids()),
       'load': {
         '1': load[0],
         '5': load[1],
@@ -87,6 +89,9 @@ def get_stats():
       'disk': {
       },
       'net': {
+        'global': {
+            'nbConnections': len(psutil.net_connections())
+        }
       }
     }
 
